@@ -4,6 +4,8 @@ import javax.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.ToString;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -65,7 +67,7 @@ public class Travel {
     private String managerApproval;
 
     // --- Relationships ---
-
+    @ToString.Exclude
     // One travel segment belongs to one itinerary (One-to-One FK: itinerary_id)
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "itinerary_id", unique = true, nullable = false)

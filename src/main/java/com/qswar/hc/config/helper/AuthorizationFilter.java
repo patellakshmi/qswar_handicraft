@@ -2,6 +2,7 @@ package com.qswar.hc.config.helper;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.qswar.hc.config.header.HeaderModifyingRequestWrapper;
 import com.qswar.hc.constants.APIConstant;
 import com.qswar.hc.model.Employee;
 import com.qswar.hc.utility.JwtPayloadDecoder;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Component;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -57,12 +59,19 @@ public class AuthorizationFilter extends BasicAuthenticationFilter {
         }
 
 
-        if(requestPath.startsWith(privateApiPath) &&  !isRequestAutherize(request)){
+        if(requestPath.startsWith(privateApiPath) &&  StringUtils.isBlank(identity = isRequestAutherize(request))){
             throw new IOException();
         }
 
+        if( requestPath.startsWith(privateApiPath) ) {
+            HeaderModifyingRequestWrapper requestWrapper = new HeaderModifyingRequestWrapper(request);
+            requestWrapper.addHeader(SecurityConfigConst.F4E_IDENTITY, identity);
+            filterChain.doFilter(requestWrapper, response);
+            return;
+        }
+
         filterChain.doFilter(request, response);
-        return;
+
 
     }
 
@@ -93,7 +102,7 @@ public class AuthorizationFilter extends BasicAuthenticationFilter {
 
     }
 
-    private boolean isRequestAutherize(HttpServletRequest request) {
+    private String isRequestAutherize(HttpServletRequest request) {
 
         String token = request.getHeader(SecurityConfigConst.F4E_AUTH);
         String identity = request.getHeader(SecurityConfigConst.F4E_IDENTITY);
@@ -101,7 +110,7 @@ public class AuthorizationFilter extends BasicAuthenticationFilter {
         String decodedPayload = JwtPayloadDecoder.decodePayload(token);
 
         if( employee == null) {
-            return false;
+            return null;
         }
 
         boolean identityAuthContain = StringMatcher.containsRegex(decodedPayload, identity,false)
@@ -109,7 +118,9 @@ public class AuthorizationFilter extends BasicAuthenticationFilter {
                 || StringMatcher.containsRegex(decodedPayload, employee.getEmail(),false)
                 || StringMatcher.containsRegex(decodedPayload, employee.getPhone(),false);
 
-        return identityAuthContain;
+        if( identityAuthContain )
+            return employee.getEmail();
+        return null;
     }
 
 }

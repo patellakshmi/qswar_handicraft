@@ -4,6 +4,7 @@ import javax.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.ToString;
 import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
@@ -59,16 +60,18 @@ public class Employee implements Serializable {
     private String userPhotoLink;
 
     // --- Relationships ---
-
+    @ToString.Exclude
     // Many employees can have one manager (self-referencing FK)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manager_emp_id", referencedColumnName = "id")
     private Employee manager;
 
+    @ToString.Exclude
     // One manager can have many subordinates
     @OneToMany(mappedBy = "manager", cascade = CascadeType.ALL)
     private List<Employee> subordinates;
 
+    @ToString.Exclude
     // One employee can have many visits
     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
     private List<Visit> visits;

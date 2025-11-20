@@ -3,6 +3,7 @@ import javax.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -60,7 +61,7 @@ public class CloserReport implements Serializable {
     private String managerApproval;
 
     // --- Relationships ---
-
+    @ToString.Exclude
     // One closer report belongs to one visit (One-to-One FK: visit_id)
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "visit_id", unique = true, nullable = false)

@@ -18,13 +18,13 @@ CREATE TABLE employee (
 
 CREATE TABLE visit (
     visit_id INT PRIMARY KEY AUTO_INCREMENT,
-    emp_id INT NOT NULL,
-    title VARCHAR(255) NOT NULL,
+    emp_id INT,
+    title VARCHAR(255),
     purpose TEXT,
     place VARCHAR(100),
     location VARCHAR(255),
-    `from` DATE,
-    `to` DATE,
+    start DATE,
+    end DATE,
     visit_status VARCHAR(50),
     manager_approval VARCHAR(50) COMMENT 'e.g., Pending, Approved, Rejected',
     visit_icon_link VARCHAR(512),
@@ -33,7 +33,7 @@ CREATE TABLE visit (
 
 CREATE TABLE itinerary (
     itinerary_id INT PRIMARY KEY AUTO_INCREMENT,
-    visit_id INT NOT NULL,
+    visit_id INT,
     payment_type VARCHAR(50),
     payment_status VARCHAR(50),
     itinerary_status VARCHAR(50),
@@ -43,7 +43,7 @@ CREATE TABLE itinerary (
 
 CREATE TABLE hotel (
     hotel_id INT PRIMARY KEY AUTO_INCREMENT,
-    itinerary_id INT UNIQUE NOT NULL,
+    itinerary_id INT,
     name VARCHAR(100),
     location VARCHAR(255),
     checkin DATETIME,
@@ -64,7 +64,7 @@ CREATE TABLE hotel (
 
 CREATE TABLE travel (
     travel_id INT PRIMARY KEY AUTO_INCREMENT,
-    itinerary_id INT UNIQUE NOT NULL,
+    itinerary_id INT,
     travel_type VARCHAR(50) COMMENT 'e.g., Flight, Train, Car',
     `from` VARCHAR(100),
     `to` VARCHAR(100),
@@ -85,7 +85,7 @@ CREATE TABLE travel (
 
 CREATE TABLE closer_report (
     cr_id INT PRIMARY KEY AUTO_INCREMENT,
-    visit_id INT UNIQUE NOT NULL,
+    visit_id INT,
     doc_type VARCHAR(50) COMMENT 'e.g., Report, Presentation, Invoice',
     doc_sub_type VARCHAR(50),
     title VARCHAR(255),

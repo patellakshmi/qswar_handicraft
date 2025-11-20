@@ -1,9 +1,6 @@
 package com.qswar.hc.model;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -68,7 +65,7 @@ public class Hotel {
     private String managerApproval;
 
     // --- Relationships ---
-
+    @ToString.Exclude
     // One hotel booking belongs to one itinerary (One-to-One FK: itinerary_id)
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "itinerary_id", unique = true, nullable = false)

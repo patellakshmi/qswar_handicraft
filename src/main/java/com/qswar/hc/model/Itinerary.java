@@ -3,6 +3,7 @@ package com.qswar.hc.model;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.ToString;
 
 import javax.persistence.*;
 
@@ -34,16 +35,18 @@ public class Itinerary {
     private String managerApproval;
 
     // --- Relationships ---
-
+    @ToString.Exclude
     // Many itineraries belong to one visit (FK: visit_id)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "visit_id", nullable = false)
     private Visit visit;
 
+    @ToString.Exclude
     // One itinerary has one hotel booking (UNIQUE FK: itinerary_id)
     @OneToOne(mappedBy = "itinerary", cascade = CascadeType.ALL, orphanRemoval = true)
     private Hotel hotel;
 
+    @ToString.Exclude
     // One itinerary has one travel segment (UNIQUE FK: itinerary_id)
     @OneToOne(mappedBy = "itinerary", cascade = CascadeType.ALL, orphanRemoval = true)
     private Travel travel;

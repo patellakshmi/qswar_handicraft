@@ -4,9 +4,10 @@ import javax.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.ToString;
 
 import java.io.Serializable;
-import java.time.LocalDate;
+import java.sql.Date;
 import java.util.List;
 
 /**
@@ -37,11 +38,11 @@ public class Visit implements Serializable {
     @Column(name = "location", length = 255)
     private String location;
 
-    @Column(name = "from")
-    private LocalDate fromDate; // Use LocalDate for DATE type
+    @Column(name = "start")
+    private Date startDate; // Use LocalDate for DATE type
 
-    @Column(name = "to")
-    private LocalDate toDate; // Use LocalDate for DATE type
+    @Column(name = "end")
+    private Date endDate; // Use LocalDate for DATE type
 
     @Column(name = "visit_status", length = 50)
     private String visitStatus;
@@ -53,15 +54,18 @@ public class Visit implements Serializable {
     private String visitIconLink;
     // --- Relationships ---
 
+    @ToString.Exclude
     // Many visits belong to one employee (FK: emp_id)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id", nullable = false)
+    @JoinColumn(name = "emp_id", nullable = false)
     private Employee employee;
 
+    @ToString.Exclude
     // One visit can have many itineraries
     @OneToMany(mappedBy = "visit", cascade = CascadeType.ALL)
     private List<Itinerary> itineraries;
 
+    @ToString.Exclude
     // One visit has one closer report (UNIQUE FK: visit_id)
     @OneToOne(mappedBy = "visit", cascade = CascadeType.ALL, orphanRemoval = true)
     private CloserReport closerReport;

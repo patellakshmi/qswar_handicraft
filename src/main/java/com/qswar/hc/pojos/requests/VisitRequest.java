@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.codehaus.jackson.annotate.JsonProperty;
 
+import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -33,28 +34,13 @@ public class VisitRequest {
     @JsonProperty("location")
     private String location;
 
-    @JsonProperty("fromDate")
-    private LocalDate fromDate; // Use LocalDate for DATE type
+    @JsonProperty("startDate")
+    private Date startDate; // Use LocalDate for DATE type
 
-    @JsonProperty("toDate")
-    private LocalDate toDate; // Use LocalDate for DATE type
+    @JsonProperty("endDate")
+    private Date endDate; // Use LocalDate for DATE type
 
-    @JsonProperty("visitStatus")
-    private String visitStatus;
-
-    @JsonProperty("managerApproval")
-    private String managerApproval;
-
-    @JsonProperty("managerApproval")
+    @JsonProperty("visitIconLink")
     private String visitIconLink;
 
-    @JsonProperty("employee")
-    private Employee employee;
-
-    @JsonProperty("itineraries")
-    private List<Itinerary> itineraries;
-
-    // One visit has one closer report (UNIQUE FK: visit_id)
-    @JsonProperty("closerReport")
-    private CloserReport closerReport;
 }

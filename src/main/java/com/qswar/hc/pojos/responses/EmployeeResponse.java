@@ -48,11 +48,11 @@ public class EmployeeResponse {
     private String userPhotoLink;
 
     @JsonProperty("manager")
-    private Employee manager;
+    private EmployeeResponse manager;
 
     @JsonProperty("subordinates")
-    private List<Employee> subordinates;
+    private List<EmployeeResponse> subordinates;
 
     @JsonProperty("visits")
-    private List<Visit> visits;
+    private List<VisitResponse> visits;
 }
