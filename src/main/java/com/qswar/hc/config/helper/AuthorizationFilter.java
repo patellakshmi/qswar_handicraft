@@ -56,11 +56,13 @@ public class AuthorizationFilter extends BasicAuthenticationFilter {
             return;
         }
 
-        if( isRequestAutherize(request)){
-            filterChain.doFilter(request, response);
-            return;
+
+        if(requestPath.startsWith(privateApiPath) &&  !isRequestAutherize(request)){
+            throw new IOException();
         }
-        throw new IOException();
+
+        filterChain.doFilter(request, response);
+        return;
 
     }
 

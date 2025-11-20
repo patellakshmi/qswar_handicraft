@@ -31,11 +31,6 @@ public class EmployeeController {
         this.employeeService = employeeService;
     }
 
-    /**
-     * GET /api/v1/employees
-     * Retrieves a list of all employees.
-     * @return ResponseEntity containing a list of Employee objects.
-     */
     @GetMapping(APIConstant.PRIVATE+"/api/v1/employees")
     public ResponseEntity<GenericResponse> getAllEmployees() {
         List<Employee> employees = employeeService.findAllEmployees();
@@ -55,12 +50,7 @@ public class EmployeeController {
                 HttpStatus.OK);
 
     }
-    /**
-     * POST /api/v1/employees
-     * Creates a new employee.
-     * @param employee The employee object from the request body.
-     * @return ResponseEntity with the created Employee object and HTTP status 201 (Created).
-     */
+
     @PostMapping
     public ResponseEntity<Employee> createEmployee(@RequestBody Employee employee) {
         // Assuming the client provides a unique emp_id as per the schema, or the database handles it.
@@ -71,13 +61,7 @@ public class EmployeeController {
         return new ResponseEntity<>(savedEmployee, HttpStatus.CREATED);
     }
 
-    /**
-     * PUT /api/v1/employees/{id}
-     * Fully updates an existing employee by ID.
-     * @param id The ID of the employee to update.
-     * @param employeeDetails The new employee details from the request body.
-     * @return ResponseEntity with the updated Employee object and HTTP status 200 (OK), or 404 (Not Found).
-     */
+
     @PutMapping(APIConstant.PRIVATE+"/api/v1/employees/{id}")
     public ResponseEntity<GenericResponse> updateEmployee(@PathVariable Integer id, @RequestBody Employee employeeDetails) {
         Optional<Employee> employeeOptional = employeeService.findById(id);
