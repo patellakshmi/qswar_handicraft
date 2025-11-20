@@ -44,7 +44,7 @@ public class EmployeeController {
         this.closerReportRepository = closerReportRepository;
     }
 
-    @GetMapping(APIConstant.PRIVATE+"/api/v1/employee")
+    @GetMapping(APIConstant.PRIVATE+"/v1/employee")
     public ResponseEntity<GenericResponse> getEmployee(@RequestHeader("hc_auth") String authToken,@RequestHeader("identity") String identity, @RequestHeader("tree_height") int height){
 
         Employee employee = employeeService.getEmployee(identity);
@@ -79,7 +79,7 @@ public class EmployeeController {
     }
 
 
-    @GetMapping(APIConstant.PRIVATE+"/api/v1/employees")
+    @GetMapping(APIConstant.PRIVATE+"/v1/employee/all")
     public ResponseEntity<GenericResponse> getAllEmployees() {
         List<Employee> employees = employeeService.findAllEmployees();
 
@@ -110,7 +110,7 @@ public class EmployeeController {
     }
 
 
-    @PutMapping(APIConstant.PRIVATE+"/api/v1/employees/{id}")
+    @PutMapping(APIConstant.PRIVATE+"/v1/employees/{id}")
     public ResponseEntity<GenericResponse> updateEmployee(@PathVariable Integer id, @RequestBody Employee employeeDetails) {
         Optional<Employee> employeeOptional = employeeService.findById(id);
 
