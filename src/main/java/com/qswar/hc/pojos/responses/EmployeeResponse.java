@@ -39,7 +39,7 @@ public class EmployeeResponse {
     private String position;
 
     @JsonProperty("authorised")
-    private Boolean authorised = true; // Maps to BOOLEAN DEFAULT TRUE
+    private String authorised; // Maps to BOOLEAN DEFAULT TRUE
 
     @JsonProperty("department")
     private String department;

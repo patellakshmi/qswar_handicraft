@@ -1,10 +1,14 @@
 package com.qswar.hc.controller;
 
+import com.google.gson.Gson;
 import com.qswar.hc.constants.APIConstant;
 import com.qswar.hc.constants.Constant;
+import com.qswar.hc.enumurator.Authorize;
+import com.qswar.hc.enumurator.EmpAuthorized;
 import com.qswar.hc.model.CloserReport;
 import com.qswar.hc.model.Employee;
 import com.qswar.hc.model.Visit;
+import com.qswar.hc.pojos.requests.EmployeeRequest;
 import com.qswar.hc.pojos.responses.CloserReportResponse;
 import com.qswar.hc.pojos.responses.EmployeeResponse;
 import com.qswar.hc.pojos.responses.GenericResponse;
@@ -31,7 +35,7 @@ import java.util.Optional;
 
 @RestController
 public class EmployeeController {
-
+    private final Gson gson = new Gson();
     private static final Log log = LogFactory.getLog(EmployeeController.class);
     private final EmployeeService employeeService;
     private final VisitService visitService;
@@ -83,34 +87,60 @@ public class EmployeeController {
     public ResponseEntity<GenericResponse> getAllEmployees() {
         List<Employee> employees = employeeService.findAllEmployees();
 
-        for (Employee employee : employees) {
-            employee.setVisits(null);
+        if(employees != null && !employees.isEmpty()) {
+            return new ResponseEntity<GenericResponse>(
+                    new GenericResponse(Constant.STATUS.SUCCESS.name(),
+                            Constant.NO_EMPLOYEE_FOUND, null),
+                    HttpStatus.OK);
         }
 
-        if (employees.isEmpty()) {
-            // Return 204 No Content if the list is empty
-            return ResponseEntity.noContent().build();
+        List<EmployeeResponse>  employeeResponseList = new ArrayList<>();
+        for (Employee employee : employees) {
+            EmployeeResponse employeeResponse = convert(employee);
+            employeeResponseList.add(employeeResponse);
         }
+
 
         return new ResponseEntity<GenericResponse>(
                 new GenericResponse( Constant.STATUS.SUCCESS.name(),
-                        Constant.COURSE_CREATED, employees),
+                        Constant.COURSE_CREATED, employeeResponseList),
                 HttpStatus.OK);
 
     }
 
-    @PostMapping
-    public ResponseEntity<Employee> createEmployee(@RequestBody Employee employee) {
-        // Assuming the client provides a unique emp_id as per the schema, or the database handles it.
-        // In a production app, more thorough validation and security (like password hashing) would be added here.
+    @PostMapping(APIConstant.PRIVATE+"/v1/employee")
+    public ResponseEntity<GenericResponse> createEmployee(@RequestBody EmployeeRequest employeeRequest , @RequestHeader("hc_auth") String hcAuth, @RequestHeader("identity") String identity) {
 
-        Employee savedEmployee = employeeService.saveEmployee(employee);
+        Employee superAdmin = employeeService.getEmployee(identity);
+        EmpAuthorized empAuthorized = this.gson.fromJson(superAdmin.getAuthorised(), EmpAuthorized.class);
 
-        return new ResponseEntity<>(savedEmployee, HttpStatus.CREATED);
+        if( !empAuthorized.isAuthorized(Authorize.SUPER_ADMIN)){
+            return new ResponseEntity<GenericResponse>(
+                    new GenericResponse( Constant.STATUS.SUCCESS.name(),
+                            Constant.UNAUTHORIZED_FOR_CREATE_EMP, null),
+                    HttpStatus.OK);
+        }
+
+        Employee empHasToCreate = covert(employeeRequest);
+
+        Employee savedEmployee = employeeService.saveEmployee(empHasToCreate);
+
+        if( savedEmployee != null) {
+            EmployeeResponse employeeResponse = convert(savedEmployee);
+            return new ResponseEntity<GenericResponse>(
+                    new GenericResponse( Constant.STATUS.SUCCESS.name(),
+                            Constant.EMPLOYEE_CREATED, employeeResponse),
+                    HttpStatus.OK);
+        }
+
+        return new ResponseEntity<GenericResponse>(
+                new GenericResponse( Constant.STATUS.SUCCESS.name(),
+                        Constant.FAIL_TO_CREATE_EMPLOYEE, null),
+                HttpStatus.OK);
     }
 
 
-    @PutMapping(APIConstant.PRIVATE+"/v1/employees/{id}")
+    @PutMapping(APIConstant.PRIVATE+"/v1/employee/{id}")
     public ResponseEntity<GenericResponse> updateEmployee(@PathVariable Integer id, @RequestBody Employee employeeDetails) {
         Optional<Employee> employeeOptional = employeeService.findById(id);
 
@@ -138,10 +168,12 @@ public class EmployeeController {
         // Save the updated entity
         Employee updatedEmployee = employeeService.saveEmployee(existingEmployee);
         updatedEmployee.setVisits(null);
+        EmployeeResponse employeeResponse = convert(updatedEmployee);
+
 
         return new ResponseEntity<GenericResponse>(
                 new GenericResponse( Constant.STATUS.SUCCESS.name(),
-                        Constant.COURSE_CREATED, updatedEmployee),
+                        Constant.EMPLOYEE_UPDATED, employeeResponse),
                 HttpStatus.OK);
 
     }
@@ -278,5 +310,19 @@ public class EmployeeController {
                 closerReportResponse.setManagerApproval(closerReport.getManagerApproval());
 
             return closerReportResponse;
+    }
+
+    private Employee covert(EmployeeRequest employeeRequest){
+        if( null == employeeRequest){ return null; }
+        Employee employee = new Employee();
+        employee.setGovEmpId(employeeRequest.getGovEmpId());
+        employee.setName(employeeRequest.getName());
+        employee.setPhone(employeeRequest.getPhone());
+        employee.setEmail(employeeRequest.getEmail());
+        employee.setPosition(employeeRequest.getPosition());
+        employee.setAuthorised(employeeRequest.getAuthorised());
+        employee.setDepartment(employeeRequest.getDepartment());
+        employee.setUsername(employeeRequest.getUsername());
+        return employee;
     }
 }

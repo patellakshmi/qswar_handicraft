@@ -48,7 +48,7 @@ public class Employee implements Serializable {
     private String position;
 
     @Column(name = "authorised")
-    private Boolean authorised = true; // Maps to BOOLEAN DEFAULT TRUE
+    private String authorised; // Maps to BOOLEAN DEFAULT TRUE
 
     @Column(name = "department", length = 50)
     private String department;

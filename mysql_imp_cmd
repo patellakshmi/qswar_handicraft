@@ -1,0 +1,7 @@
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root@123';
+FLUSH PRIVILEGES;
+EXIT;
+
+
+sudo ufw allow 9091/tcp
+sudo ufw allow 3036/tcp

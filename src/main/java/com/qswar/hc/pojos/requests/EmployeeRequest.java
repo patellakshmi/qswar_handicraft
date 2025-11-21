@@ -16,9 +16,6 @@ import java.util.List;
 @Data
 public class EmployeeRequest {
 
-    @JsonProperty("qSwarId")
-    private String qSwarId;
-
     @JsonProperty("govEmpId")
     private String govEmpId;
 
@@ -38,20 +35,11 @@ public class EmployeeRequest {
     private String position;
 
     @JsonProperty("authorised")
-    private Boolean authorised = true; // Maps to BOOLEAN DEFAULT TRUE
+    private String authorised; // Maps to BOOLEAN DEFAULT TRUE
 
     @JsonProperty("department")
     private String department;
 
     @JsonProperty("userPhotoLink")
     private String userPhotoLink;
-
-    @JsonProperty("manager")
-    private Employee manager;
-
-    @JsonProperty("subordinates")
-    private List<Employee> subordinates;
-
-    @JsonProperty("visits")
-    private List<Visit> visits;
 }

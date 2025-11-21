@@ -1,13 +1,15 @@
 package com.qswar.hc.config.helper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.qswar.hc.config.header.HeaderModifyingRequestWrapper;
 import com.qswar.hc.constants.APIConstant;
+import com.qswar.hc.pojos.common.AuthDetail;
 import com.qswar.hc.utility.EmailValidator;
 import com.qswar.hc.utility.PhoneNumberValidator;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.SneakyThrows;
-import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -27,7 +29,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
-
+    private final Gson gson = new Gson();
     private AuthenticationManager authenticationManager;
 
     public AuthenticationFilter(AuthenticationManager authenticationManager) {
@@ -68,9 +70,11 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
                 .signWith(SignatureAlgorithm.HS512, SecurityConfigConst.SECRETE_KEY.getBytes())
                 .compact();
         response.addHeader(SecurityConfigConst.F4E_AUTH, "" + token);
-        JSONObject json = new JSONObject();
-        json.put(SecurityConfigConst.F4E_AUTH, token);
-        response.getOutputStream().write(json.toString().getBytes( StandardCharsets.UTF_8 ) );
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        AuthDetail authDetail = AuthDetail.builder().hcAuth(token).status("SUCCESS").message("Login successfully").build();
+        String jsonString = this.gson.toJson(authDetail);
+        response.getWriter().write(jsonString);
     }
 
     void setCorsHeader(HttpServletResponse response){
