@@ -140,7 +140,7 @@ public class EmployeeController {
     }
 
 
-    @PutMapping(APIConstant.PRIVATE+"/v1/employee/{id}")
+    @PutMapping(APIConstant.PRIVATE+"/v1/employee")
     public ResponseEntity<GenericResponse> updateEmployee(@PathVariable Integer id, @RequestBody Employee employeeDetails) {
         Optional<Employee> employeeOptional = employeeService.findById(id);
 
