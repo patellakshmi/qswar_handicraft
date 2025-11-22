@@ -83,7 +83,7 @@ public class EmployeeController {
     }
 
 
-    @GetMapping(APIConstant.PRIVATE+"/v1/employee/all")
+    @GetMapping(APIConstant.PUBLIC+"/v1/registered/employee")
     public ResponseEntity<GenericResponse> getAllEmployees() {
         List<Employee> employees = employeeService.findAllEmployees();
 
