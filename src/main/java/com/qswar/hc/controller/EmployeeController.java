@@ -100,7 +100,7 @@ public class EmployeeController {
      * Note: This is PUBLIC, so security consideration is key.
      * @return List of all employee details.
      */
-    @GetMapping(APIConstant.PUBLIC + "/registered") // Maps to APIConstant.PUBLIC + "/v1/registered/employee"
+    @GetMapping(APIConstant.PUBLIC + "/v1/registered") // Maps to APIConstant.PUBLIC + "/v1/registered/employee"
     public ResponseEntity<GenericResponse> getAllEmployees() {
         List<Employee> employees = employeeService.findAllEmployees();
 
