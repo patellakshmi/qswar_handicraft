@@ -2,32 +2,15 @@ package com.qswar.hc.service;
 
 import com.qswar.hc.model.Employee;
 import com.qswar.hc.model.Visit;
-import com.qswar.hc.repository.EmployeeRepository;
-import com.qswar.hc.repository.VisitRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
-@Service
-public class VisitService {
+public interface VisitService {
 
-    private VisitRepository visitRepository;
+    Visit save(Visit visit);
 
-    @Autowired
-    public VisitService(VisitRepository visitRepository) {
-        this.visitRepository = visitRepository;
-    }
+    List<Visit> findByEmployee(Employee employee);
 
-    public Visit save(Visit visit) {
-        return visitRepository.save(visit);
-    }
-
-    public List<Visit> findByEmployeeId(Employee  empId) {
-        return visitRepository.findByEmployeeId(empId);
-    }
-
-    public Visit getVisitById(Long id){
-        return visitRepository.getVisitById(id);
-    }
+    Optional<Visit> getVisitById(Long id);
 }

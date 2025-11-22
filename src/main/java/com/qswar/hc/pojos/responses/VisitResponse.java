@@ -58,5 +58,5 @@ public class VisitResponse {
 
     // One visit has one closer report (UNIQUE FK: visit_id)
     @JsonProperty("closerReport")
-    private CloserReport closerReport;
+    private CloserReportResponse closerReport;
 }

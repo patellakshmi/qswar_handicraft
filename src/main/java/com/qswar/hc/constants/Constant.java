@@ -24,11 +24,23 @@ public class Constant {
     public static final String EMPLOYEE_UPDATED= "Employee has been updated successfully";
     public static final String EMPLOYEE_DELETED= "Employee has been deleted successfully";
     public static final String UNAUTHORIZED_FOR_CREATE_EMP= "Your are unauthorized";
+    public static final String EMPLOYEE_FETCHED ="Employee has been fetched successfully";
+    public static final String EMPLOYEE_FETCH_FAILED ="Employee has failed";
+    public static final String EMPLOYEE_FETCH_ERROR ="Employee has failed";
+    public static final String EMPLOYEE_LIST_FETCHED ="Employee list has been fetched successfully";
+
+
+    public static final String VISITS_FETCHED ="Visits has been fetched successfully";
+    public static final String VISIT_CREATED ="Visit has been created successfully";
+    public static final String VISIT_UPDATED = "Visit has been updated successfully";
+
+
 
     @ToString
     public enum STATUS {
         SUCCESS("SUCCESS"),
-        FAIL("FAIL");
+        FAIL("FAIL"),
+        ERROR("FAIL");
 
         private final String name;
         STATUS(String name) {
