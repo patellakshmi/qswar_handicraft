@@ -4,6 +4,7 @@ import com.qswar.hc.constants.APIConstant;
 import com.qswar.hc.constants.Constant;
 import com.qswar.hc.model.Employee;
 import com.qswar.hc.model.Visit;
+import com.qswar.hc.pojos.requests.UpdateVisitRequest;
 import com.qswar.hc.pojos.requests.VisitRequest;
 import com.qswar.hc.pojos.responses.EmployeeResponse;
 import com.qswar.hc.pojos.responses.GenericResponse;
@@ -12,12 +13,16 @@ import com.qswar.hc.repository.VisitRepository;
 import com.qswar.hc.service.EmployeeService;
 import com.qswar.hc.service.VisitService;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.Column;
+import javax.persistence.Lob;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -32,7 +37,7 @@ public class VisitController {
 
 
     @PostMapping(APIConstant.PRIVATE+APIConstant.VERSION_1+"/visit")
-    public ResponseEntity<GenericResponse> createVisit(@RequestBody VisitRequest visitRequest, @RequestHeader("hc_auth") String authToken,  @RequestHeader("identity") String identity) {
+    public ResponseEntity<GenericResponse> createVisit(@RequestBody VisitRequest visitRequest, @RequestHeader("hc_auth") String authToken,  @RequestHeader("identity") String identity, @RequestHeader("force") Boolean force) {
         if(StringUtils.isBlank(identity)) {
             return new ResponseEntity<GenericResponse>(
                     new GenericResponse(Constant.STATUS.FAIL.name(),
@@ -40,7 +45,15 @@ public class VisitController {
                     HttpStatus.BAD_REQUEST);
         }
 
+        if( visitRequest.getStartDate() == null ||  visitRequest.getEndDate() == null || visitRequest.getStartDate().before(new Date()) ) {
+            return new ResponseEntity<GenericResponse>(
+                    new GenericResponse(Constant.STATUS.FAIL.name(),
+                            "Visit date", null),
+                    HttpStatus.BAD_REQUEST);
+        }
+
         Employee employee = employeeService.getEmployee(identity);
+
         if(employee == null) {
             return new ResponseEntity<GenericResponse>(
                     new GenericResponse(Constant.STATUS.FAIL.name(),
@@ -48,16 +61,101 @@ public class VisitController {
                     HttpStatus.BAD_REQUEST);
         }
 
+
+
+        if( force != null && force ){
+            List<Visit> earlierExitingVisit = visitService.findByEmployeeId(employee);
+            if( earlierExitingVisit != null ){
+                for( Visit visit : earlierExitingVisit ){
+                    if( !( visit.getStartDate().before(visitRequest.getStartDate()) && visit.getEndDate().before( visitRequest.getStartDate()) || visit.getEndDate().after(visitRequest.getEndDate()) &&  visit.getStartDate().after(visitRequest.getEndDate()))  ) {
+                        // Overlap
+                        return new ResponseEntity<GenericResponse>(
+                                new GenericResponse(Constant.STATUS.FAIL.name(),
+                                        "Some of visit has overlapping date", null),
+                                HttpStatus.BAD_REQUEST);
+                    }
+                }
+            }
+        }
+
         Visit visit = convert(visitRequest);
         visit.setEmployee(employee);
         visit = visitService.save(visit);
-        VisitResponse visitResponse = convert(visit);
+        VisitResponse visitResponse = convert(visit, false);
 
         return new ResponseEntity<GenericResponse>(
                 new GenericResponse( Constant.STATUS.SUCCESS.name(),
                         Constant.COURSE_CREATED, visitResponse),
                 HttpStatus.OK);
     }
+
+    @PutMapping(APIConstant.PRIVATE+APIConstant.VERSION_1+"/visit")
+    public ResponseEntity<GenericResponse> updateVisit(@RequestBody UpdateVisitRequest visitRequest, @RequestHeader("hc_auth") String authToken, @RequestHeader("identity") String identity, @RequestHeader("force") Boolean force) {
+
+        if(StringUtils.isBlank(identity)) {
+            return new ResponseEntity<GenericResponse>(
+                    new GenericResponse(Constant.STATUS.FAIL.name(),
+                            null, null),
+                    HttpStatus.BAD_REQUEST);
+        }
+
+        Long visitId = visitRequest.getVisitId();
+        Visit needToBeUpdatedVisit = visitService.getVisitById(visitId);
+
+        if(needToBeUpdatedVisit == null) {
+            return new ResponseEntity<GenericResponse>(
+                    new GenericResponse(Constant.STATUS.FAIL.name(),
+                            "Visit does not exit", null),
+                    HttpStatus.BAD_REQUEST);
+        }
+        Employee employee = employeeService.getEmployee(identity);
+        Employee visitEmployee = needToBeUpdatedVisit.getEmployee();
+        if(employee == null || visitEmployee.getId() != employee.getId() ) {
+            return new ResponseEntity<GenericResponse>(
+                    new GenericResponse(Constant.STATUS.FAIL.name(),
+                            "You can't update this visit", null),
+                    HttpStatus.BAD_REQUEST);
+        }
+
+        if( visitRequest.getStartDate() == null ||  visitRequest.getEndDate() == null || visitRequest.getStartDate().before(new Date()) ) {
+            return new ResponseEntity<GenericResponse>(
+                    new GenericResponse(Constant.STATUS.FAIL.name(),
+                            "Visit date", null),
+                    HttpStatus.BAD_REQUEST);
+        }
+
+        if(employee == null) {
+            return new ResponseEntity<GenericResponse>(
+                    new GenericResponse(Constant.STATUS.FAIL.name(),
+                            null, null),
+                    HttpStatus.BAD_REQUEST);
+        }
+
+        if( force != null && force ){
+            List<Visit> earlierExitingVisit = visitService.findByEmployeeId(employee);
+            if( earlierExitingVisit != null ){
+                for( Visit visit : earlierExitingVisit ){
+                    if( !( visit.getStartDate().before(visitRequest.getStartDate()) && visit.getEndDate().before( visitRequest.getStartDate()) || visit.getEndDate().after(visitRequest.getEndDate()) &&  visit.getStartDate().after(visitRequest.getEndDate()))  ) {
+                        // Overlap
+                        return new ResponseEntity<GenericResponse>(
+                                new GenericResponse(Constant.STATUS.FAIL.name(),
+                                        "Some of visit has overlapping date", null),
+                                HttpStatus.BAD_REQUEST);
+                    }
+                }
+            }
+        }
+
+        updateVisit(needToBeUpdatedVisit, visitRequest);
+        needToBeUpdatedVisit = visitService.save(needToBeUpdatedVisit);
+        VisitResponse visitResponse = convert(needToBeUpdatedVisit, false);
+
+        return new ResponseEntity<GenericResponse>(
+                new GenericResponse( Constant.STATUS.SUCCESS.name(),
+                        Constant.COURSE_CREATED, visitResponse),
+                HttpStatus.OK);
+    }
+
 
     @GetMapping(APIConstant.PRIVATE+APIConstant.VERSION_1+"/visit")
     public ResponseEntity<GenericResponse> getVisit(@RequestHeader("hc_auth") String authToken,  @RequestHeader("identity") String identity) {
@@ -93,8 +191,41 @@ public class VisitController {
                 HttpStatus.OK);
     }
 
+    private void updateVisit(Visit needToBeUpdatedVisit, UpdateVisitRequest updateVisitRequest){
+        if( updateVisitRequest.getStartDate() != null  &&
+                !DateUtils.isSameDay(updateVisitRequest.getStartDate(), needToBeUpdatedVisit.getStartDate())) {
+            needToBeUpdatedVisit.setStartDate(updateVisitRequest.getStartDate());
+        }
+        if( updateVisitRequest.getEndDate() != null  &&
+                !DateUtils.isSameDay(updateVisitRequest.getEndDate(), needToBeUpdatedVisit.getEndDate())) {
+            needToBeUpdatedVisit.setEndDate(updateVisitRequest.getEndDate());
+        }
 
+        if( updateVisitRequest.getTitle() != null && !StringUtils.isEmpty(updateVisitRequest.getTitle()) ) {
+            needToBeUpdatedVisit.setTitle(updateVisitRequest.getTitle());
+        }
 
+        if( updateVisitRequest.getPurpose() != null && !StringUtils.isEmpty(updateVisitRequest.getPurpose()) ) {
+            needToBeUpdatedVisit.setPurpose(updateVisitRequest.getPurpose());
+        }
+
+        if ( updateVisitRequest.getLocation() != null && !StringUtils.isEmpty(updateVisitRequest.getLocation()) ) {
+            needToBeUpdatedVisit.setLocation(updateVisitRequest.getLocation());
+        }
+
+        if( updateVisitRequest.getPlace() != null && !StringUtils.isEmpty(updateVisitRequest.getPlace()) ) {
+            needToBeUpdatedVisit.setPlace(updateVisitRequest.getPlace());
+        }
+
+        if( updateVisitRequest.getVisitIconLink() != null && !StringUtils.isEmpty(updateVisitRequest.getVisitIconLink()) ) {
+            needToBeUpdatedVisit.setVisitIconLink(updateVisitRequest.getVisitIconLink());
+        }
+
+        if( updateVisitRequest.getVisitStatus() != null && !StringUtils.isEmpty(updateVisitRequest.getVisitStatus()) ) {
+            needToBeUpdatedVisit.setVisitStatus(updateVisitRequest.getVisitStatus());
+        }
+
+    }
 
     private Visit convert(VisitRequest visitRequest) {
 
@@ -114,11 +245,11 @@ public class VisitController {
         if( !StringUtils.isBlank(visitRequest.getLocation()))
             visit.setLocation(visitRequest.getLocation());
 
-        /*if(  visitRequest.getFromDate() != null )
-            visit.setFromDate(visitRequest.getFromDate());
+        if(  visitRequest.getStartDate()!= null )
+            visit.setStartDate(visitRequest.getStartDate());
 
-        if(  visitRequest.getToDate() != null )
-            visit.setFromDate(visitRequest.getToDate());*/
+        if(  visitRequest.getEndDate() != null )
+            visit.setEndDate(visitRequest.getEndDate());
 
         if( !StringUtils.isBlank(visitRequest.getVisitIconLink()))
             visit.setVisitIconLink(visitRequest.getVisitIconLink());

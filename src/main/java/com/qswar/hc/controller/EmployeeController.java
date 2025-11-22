@@ -141,32 +141,29 @@ public class EmployeeController {
 
 
     @PutMapping(APIConstant.PRIVATE+"/v1/employee")
-    public ResponseEntity<GenericResponse> updateEmployee(@PathVariable Integer id, @RequestBody Employee employeeDetails) {
-        Optional<Employee> employeeOptional = employeeService.findById(id);
+    public ResponseEntity<GenericResponse> updateEmployee( @RequestBody EmployeeRequest employeeRequest, @RequestHeader("hc_auth") String hcAuth, @RequestHeader("identity") String identity) {
+        Employee employee = employeeService.getEmployee(identity);
 
-        if (employeeOptional == null) {
+        if (employee == null) {
             return ResponseEntity.notFound().build();
         }
 
-        // Get existing employee and update fields from the payload
-        Employee existingEmployee = employeeOptional.get();
+        if( !StringUtils.isBlank(employeeRequest.getGovEmpId()))
+            employee.setGovEmpId(employeeRequest.getGovEmpId());
+        if( !StringUtils.isBlank(employeeRequest.getName()))
+            employee.setName(employeeRequest.getName());
+        if( !StringUtils.isBlank(employeeRequest.getPhone()))
+            employee.setPhone(employeeRequest.getPhone());
+        if( !StringUtils.isBlank(employeeRequest.getEmail()))
+            employee.setEmail(employeeRequest.getEmail());
+        if( !StringUtils.isBlank(employeeRequest.getPosition()))
+            employee.setPosition(employeeRequest.getPosition());
+        if( !StringUtils.isBlank(employeeRequest.getAuthorised()))
+            employee.setAuthorised(employeeRequest.getAuthorised());
+        if( !StringUtils.isBlank(employeeRequest.getDepartment()))
+            employee.setDepartment(employeeRequest.getDepartment());
 
-        // Update fields (excluding collections which are handled separately in JPA)
-        existingEmployee.setGovEmpId(employeeDetails.getGovEmpId());
-        existingEmployee.setName(employeeDetails.getName());
-        existingEmployee.setPhone(employeeDetails.getPhone());
-        existingEmployee.setEmail(employeeDetails.getEmail());
-        existingEmployee.setPosition(employeeDetails.getPosition());
-        existingEmployee.setAuthorised(employeeDetails.getAuthorised());
-        existingEmployee.setDepartment(employeeDetails.getDepartment());
-        // WARNING: Updating password via PUT is generally bad practice; a separate endpoint is recommended.
-        existingEmployee.setPassword(employeeDetails.getPassword());
-
-        // Update manager reference
-        existingEmployee.setManager(employeeDetails.getManager());
-
-        // Save the updated entity
-        Employee updatedEmployee = employeeService.saveEmployee(existingEmployee);
+        Employee updatedEmployee = employeeService.saveEmployee(employee);
         updatedEmployee.setVisits(null);
         EmployeeResponse employeeResponse = convert(updatedEmployee);
 

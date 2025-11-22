@@ -1,8 +1,5 @@
 package com.qswar.hc.pojos.requests;
 
-import com.qswar.hc.model.CloserReport;
-import com.qswar.hc.model.Employee;
-import com.qswar.hc.model.Itinerary;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,14 +7,15 @@ import lombok.NoArgsConstructor;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import java.sql.Date;
-import java.time.LocalDate;
-import java.util.List;
 
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class VisitRequest {
+public class UpdateVisitRequest {
+
+    @JsonProperty("visitId")
+    private Long visitId;
 
     @JsonProperty("title")
     private String title;

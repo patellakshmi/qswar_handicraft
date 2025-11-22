@@ -13,4 +13,7 @@ public interface VisitRepository extends JpaRepository<Visit, Long> {
     @Query("select u from Visit u where u.employee = ?1")
     List<Visit> findByEmployeeId(Employee employee);
 
+    @Query("select u from Visit u where u.visitId = ?1")
+    Visit getVisitById(Long visitId);
+
 }

@@ -26,4 +26,8 @@ public class VisitService {
     public List<Visit> findByEmployeeId(Employee  empId) {
         return visitRepository.findByEmployeeId(empId);
     }
+
+    public Visit getVisitById(Long id){
+        return visitRepository.getVisitById(id);
+    }
 }
